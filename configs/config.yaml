@@ -1,8 +1,8 @@
 defaults:
-  - data: points
+  - data: points_dense
   - renderer: realcapture_area_emitter
   - model: base
-  - material: svlatent_model
+  - material: multi_material_latent
 
 experiment_name: test
 # exp_folder: /media/raid/cloth/No_cable_capture_Sep22/BRDF_recon_Sep30/Controlled_light/hdr
