@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as NF
 import pytorch_lightning as pl
-import pl_bolts
+from utils.lr_scheduler import LinearWarmupCosineAnnealingLR
 import cv2
 import numpy as np
 import os
@@ -130,7 +130,7 @@ class Stage2Trainer_Bonn(pl.LightningModule):
                 momentum=0.9,
                 weight_decay=1e-4,
             )
-            scheduler = pl_bolts.optimizers.LinearWarmupCosineAnnealingLR(
+            scheduler = LinearWarmupCosineAnnealingLR(
                 optimizer,
                 warmup_epochs=int(self.hparams.model.optimizer.warmup_steps_ratio * self.hparams.model.trainer.max_steps),
                 max_epochs=self.hparams.model.trainer.max_steps,

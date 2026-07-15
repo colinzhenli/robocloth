@@ -39,8 +39,8 @@ python train.py \
     data.debug_num=200 \
     data.rays_num=$RAYS_NUM \
     data.point_subsample_ratio=0.1 \
-    renderer=multiarea_emitter \
-    material=bonn_latent \
+    renderer=robocloth_rig \
+    material=bonn_neural \
     experiment_name="$EXP_NAME" \
     model.optimizer.reset_latent_momentum_on_chunk_switch=False \
     model.optimizer.name=Adam8bit \

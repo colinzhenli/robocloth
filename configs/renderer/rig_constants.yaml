@@ -1,0 +1,86 @@
+# ---------------------------------------------------------------------------
+# Physical calibration of the RoboCloth capture rig — single source of truth.
+#
+# These values are produced ONCE by the offline calibration pipeline
+# (see calibration/ and docs/calibration.md) and shared by every renderer
+# preset. Do not edit unless the rig was recalibrated.
+# ---------------------------------------------------------------------------
+brdf_sampling: False       # importance-sample the BRDF for indirect bounces (unused at indir_depth=0)
+emitter_sampling: True     # next-event estimation toward the area emitter
+indir_depth: 0             # indirect bounces (paper: 0 — matte-black enclosure)
+
+camera:
+  # Radiance -> 16-bit sensor-count scale (grey-patch radiometric calibration).
+  # linear_factor is the global default; factor1/factor2 are the per-exposure
+  # segment values referenced by camera_factor.json (factor3 = factor2 * 8000/20000).
+  linear_factor: 467090956.000000
+  linear_factor1: 259494976.000000
+  linear_factor2: 467090956.000000
+  colmap_camera: True      # use COLMAP-refined poses (rotated_camera.json) instead of raw robot log
+  distance: 0.2
+  number_of_views: 40
+  number_of_view_test: 120
+  altitude_angle: 60.0     # degrees
+  views_per_batch: 8
+  look_at: [0.0, 0.0, 0.0]
+  up: [0.0, 1.0, 0.0]
+  position: [0.0, 0.0, -2.0]
+  camera_angle_x: 0.5
+  # Hand-eye calibration: camera -> gripper (Tsai), see calibration/hand_eye.py
+  R_c2g: [[-7.17667595e-04,  9.99776474e-01,  2.11302413e-02],
+          [-4.42126179e-03,  2.11268680e-02, -9.99767027e-01],
+          [-9.99989969e-01, -8.10922726e-04,  4.40511146e-03]]
+  t_c2g: [3.26272696e-02, -1.61560433e-02, 2.80920856e-02]
+  # COLMAP self-calibrated intrinsics (SIMPLE_RADIAL)
+  intrinsics:
+    width: 3072
+    height: 2048
+    focal_length: 6721.054
+    cx: 1536
+    cy: 1024
+    distortion: -0.0648
+
+mesh:
+  path:
+  use_hemisphere: False
+  mitsuba_scene: False
+  rectangle:
+    # Per-material bbox.json (from reconstruction) takes precedence at runtime.
+    bbox_json: ${dataset_folder}/bbox.json
+    center: [0.16, -0.11, -0.061]
+    width: 0.14
+    length: 0.14
+
+emitter:
+  direction_json: ${dataset_folder}/emitter_calibration.json  # LED angular falloff table
+  training_list_path: ${data.training_list_path}
+  folder_path: ${dataset_folder}
+  type: "realarea"
+  num_lights: 120
+  dist: 4.0
+  radius: 0.007            # LED radius [m], from spec sheet
+  fwhm_deg: 115.0          # LED full-width-half-maximum angle, from spec sheet
+  positions: [0.0, 0.0, 0.0]
+  radiance: [1.0, 1.0, 1.0]
+  # Turntable rotation axis fit (calibration/turntable_axis.py)
+  turntable:
+    center: [0.16084722, -0.11011424, -0.021]
+    axis: [-0.00876202, -0.01346449, 0.99987096]
+  # LED -> gripper mount transform (rig constant)
+  R_l2g: [[1.0,  0.0,  0.0],
+          [0.0,  1.0,  0.0],
+          [0.0,  0.0,  1.0]]
+  t_l2g: [0.0, -0.102, 0.02112]
+  # LED-arm robot base -> camera-arm robot base (dual-base registration)
+  base2_to_base1: [[ 9.99999959e-01,  2.33227594e-04, -1.69051819e-04,  7.22042468e-03],
+                   [-2.36740680e-04,  9.99777598e-01, -2.10878871e-02,  8.26339062e-03],
+                   [ 1.64095944e-04,  2.10879262e-02,  9.99777611e-01,  3.93500345e-03],
+                   [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  1.00000000e+00]]
+
+spp:
+  train: 16                # jobs override to 4 (paper)
+  val: 16
+  test: 16
+SPP_chunk: 4
+
+resolution: [2048, 2048]

@@ -1,17 +1,15 @@
 import torch
 import torch.nn.functional as NF
 import pytorch_lightning as pl
-import pl_bolts
+from utils.lr_scheduler import LinearWarmupCosineAnnealingLR
 from renderer import ForwardRenderer
 import torchvision
-from torchviz import make_dot
 import json
-from viztracer import VizTracer
 import cv2
 import numpy as np
 from tqdm import tqdm
 import math
-from models.emitter import DynamicPointEmitter, PresetPointEmitter, RealAreaEmitter, ConstantEmitter, MultiAreaEmitter, RotateAreaEmitter
+from models.emitter import RealAreaEmitter, ConstantEmitter, MultiAreaEmitter, RotateAreaEmitter
 from models.brdf import GreyPatchBRDF
 import os
 import glob
@@ -65,15 +63,15 @@ class Stage2Trainer(pl.LightningModule):
         self.gt_material = gt_material
         self.gt_folder = cfg.gt_folder
         # Per-material camera-factor lookup (single material per stage2 run).
-        # Stage2 batches don't carry material_ids — the entire run is one material —
-        # so we resolve the id ONCE here from cfg.dataset_folder's basename and
-        # look it up in the same camera_factor.json that stage1 uses. Falls back
-        # to the legacy single linear_factor for non-Dataset_Nov11 runs (UBO BTF,
-        # Bonn, etc.) or if the basename isn't a numeric material id.
+        # Only active when data.camera_factor_json is set explicitly: the paper
+        # runs (and therefore the released checkpoints) used the single global
+        # linear_factor below, so evaluation must keep that default.
         _ds_basename = os.path.basename(os.path.normpath(cfg.dataset_folder))
         try:
             _mid = int(_ds_basename)
-            _cf_json_path = '/media/raid/cloth/capture_data/Dataset_Nov11/camera_factor.json'
+            _cf_json_path = getattr(cfg.data, 'camera_factor_json', None)
+            if not _cf_json_path:
+                raise FileNotFoundError('data.camera_factor_json not set')
             with open(_cf_json_path) as _cf_f:
                 _cf_obj = json.load(_cf_f)
             _f1 = getattr(cfg.renderer.camera, 'linear_factor1', None)
@@ -210,7 +208,7 @@ class Stage2Trainer(pl.LightningModule):
                 momentum=0.9,
                 weight_decay=1e-4,
             )
-            scheduler = pl_bolts.optimizers.LinearWarmupCosineAnnealingLR(
+            scheduler = LinearWarmupCosineAnnealingLR(
                 optimizer,
                 warmup_epochs=int(self.hparams.model.optimizer.warmup_steps_ratio * self.hparams.model.trainer.max_steps),
                 max_epochs=self.hparams.model.trainer.max_steps,

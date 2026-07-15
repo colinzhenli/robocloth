@@ -51,12 +51,12 @@ EMITTER_CALIB=${EMITTER_CALIB:-$DATASET_FOLDER/emitter_calibration.json}
 
 if [ "$MODEL" = "PBR" ]; then
     # Disney-PBR baseline: analytic SVBRDF maps, trained from scratch.
-    MATERIAL_OVERRIDES=(material=learnable_pbr_texture_model material.disney=True)
+    MATERIAL_OVERRIDES=(material=stage2_pbr material.disney=True)
     CKPT_OVERRIDE=()
 else
     # Neural decoder warm-start (decoder-only load, decoder frozen).
     STAGE1_CKPT=${STAGE1_CKPT:?set STAGE1_CKPT to the stage-1 checkpoint (e.g. Stage-1-Finals/${MODEL}.ckpt)}
-    MATERIAL_OVERRIDES=(material=ani_latent_texture_model)
+    MATERIAL_OVERRIDES=(material=stage2_latent_texture)
     CKPT_OVERRIDE=(model.ckpt_path="$STAGE1_CKPT")
 fi
 
@@ -64,11 +64,11 @@ python train.py \
     output_folder="$OUTPUT_ROOT" \
     exp_output_root_path="$OUTPUT_ROOT/$EXP_NAME" \
     dataset_folder="$DATASET_FOLDER" \
-    data=real_dense \
+    data=stage2_dense \
     data.rays_num=$RAYS_NUM \
     data.use_fixed_val=False \
     data.debug=False \
-    renderer=multiarea_emitter \
+    renderer=robocloth_rig \
     renderer.spp.train=4 \
     renderer.emitter.direction_json="$EMITTER_CALIB" \
     "${MATERIAL_OVERRIDES[@]}" \

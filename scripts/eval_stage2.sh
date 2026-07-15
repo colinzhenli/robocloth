@@ -45,9 +45,9 @@ EMITTER_CALIB=${EMITTER_CALIB:-$DATASET_FOLDER/emitter_calibration.json}
 [ -f "$EMITTER_CALIB" ] || EMITTER_CALIB=$DATA_ROOT/emitter_calibration.json
 
 if [ "$TAG" = "PBR" ]; then
-    MATERIAL_OVERRIDES=(material=learnable_pbr_texture_model material.disney=True)
+    MATERIAL_OVERRIDES=(material=stage2_pbr material.disney=True)
 else
-    MATERIAL_OVERRIDES=(material=ani_latent_texture_model)
+    MATERIAL_OVERRIDES=(material=stage2_latent_texture)
 fi
 
 EXP_DIR=$OUTPUT_ROOT/$EXP_NAME
@@ -57,12 +57,12 @@ python train.py \
     output_folder="$OUTPUT_ROOT" \
     exp_output_root_path="$EXP_DIR" \
     dataset_folder="$DATASET_FOLDER" \
-    data=real_dense \
+    data=stage2_dense \
     data.rays_num=400000 \
     data.use_fixed_val=False \
     data.debug=False \
     data.valid_num=$VALID_NUM \
-    renderer=multiarea_emitter \
+    renderer=robocloth_rig \
     renderer.emitter.direction_json="$EMITTER_CALIB" \
     "${MATERIAL_OVERRIDES[@]}" \
     material.texture_resolution=2048 \

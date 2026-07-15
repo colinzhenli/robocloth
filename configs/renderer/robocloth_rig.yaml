@@ -1,0 +1,9 @@
+# RoboCloth rig renderer — used by stage-1 and stage-2 training/evaluation
+# on our captured data. All physical constants come from rig_constants.yaml.
+defaults:
+  - rig_constants
+  - _self_
+
+emitter:
+  legacy_swap_indexing: ${data.legacy_swap_indexing}
+  replace_list_path: ${data.replace_list_path}

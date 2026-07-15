@@ -1,0 +1,14 @@
+# Renderer preset for MERL stage-1 training (tabulated BRDFs; no captured
+# emitter table). Physical constants shared via rig_constants.yaml.
+defaults:
+  - rig_constants
+  - _self_
+
+camera:
+  distance: 2.0
+  number_of_view_test: 10
+  altitude_angle: 45.0
+
+emitter:
+  direction_json: None
+  num_lights: 40

@@ -32,13 +32,13 @@ EXP_NAME=${EXP_NAME:-Stage2_Bonn${MAT_ID}_from_${MODEL}_run_1}
 export WANDB_MODE=${WANDB_MODE:-offline}
 
 if [ "$MODEL" = "PBR" ]; then
-    MATERIAL_OVERRIDES=(material=bonn_pbr_latent material.predict_frame=True
+    MATERIAL_OVERRIDES=(material=bonn_pbr material.predict_frame=True
                         material.disney=True material.anisotropic=True
                         material.soft_constraint=True model.freeze_decoder=False)
     CKPT_OVERRIDE=()
 else
     STAGE1_CKPT=${STAGE1_CKPT:?set STAGE1_CKPT to the stage-1 checkpoint for MODEL=$MODEL}
-    MATERIAL_OVERRIDES=(material=bonn_latent material.different_decoder=False
+    MATERIAL_OVERRIDES=(material=bonn_neural material.different_decoder=False
                         material.latent_dim=24 material.decoder.use_skip_connection=True
                         material.decoder.use_film=False material.decoder.use_color_decomp=False
                         material.decoder.degree=3 material.decoder.smooth_reg=False
@@ -54,7 +54,7 @@ python train.py \
     data.overfit_mat_id=$MAT_ID \
     data.rays_num=500000 \
     data.valid_num=20 \
-    renderer=multiarea_emitter \
+    renderer=robocloth_rig \
     material.learnable_factor=True \
     "${MATERIAL_OVERRIDES[@]}" \
     experiment_name="$EXP_NAME" \

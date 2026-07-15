@@ -1,8 +1,8 @@
 defaults:
-  - data: points_dense
-  - renderer: realcapture_area_emitter
+  - data: stage1_dense
+  - renderer: robocloth_rig
   - model: base
-  - material: multi_material_latent
+  - material: stage1_prior
 
 experiment_name: test
 # exp_folder: /media/raid/cloth/No_cable_capture_Sep22/BRDF_recon_Sep30/Controlled_light/hdr

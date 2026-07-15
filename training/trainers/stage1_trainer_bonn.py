@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as NF
 import pytorch_lightning as pl
-import pl_bolts
+from utils.lr_scheduler import LinearWarmupCosineAnnealingLR
 import cv2
 import numpy as np
 import os

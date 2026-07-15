@@ -39,13 +39,13 @@ python train.py \
     data.training_list_path="$TRAINING_LIST" \
     output_folder="$OUTPUT_ROOT" \
     exp_output_root_path="$OUTPUT_ROOT/$EXP_NAME" \
-    data=points_dense \
+    data=stage1_dense \
     data.legacy_swap_indexing=False \
     data.rays_num=$RAYS_NUM \
     data.point_subsample_ratio=0.1 \
-    renderer=multiarea_emitter \
+    renderer=robocloth_rig \
     renderer.emitter.direction_json="$DATA_ROOT/emitter_calibration.json" \
-    material=multi_material_latent \
+    material=stage1_prior \
     experiment_name="$EXP_NAME" \
     model.optimizer.name=Adam8bit \
     model.continue_training=False \

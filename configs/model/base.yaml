@@ -7,7 +7,6 @@ factor_init:               # If set (stage 2, learnable_factor=True), overrides 
 
 test: False
 emitter_calibration: False # False
-test_novel_view: False
 apply_cosine_weight: False  # If True (Stage2Trainer_UBO only), multiply BRDF output by max(cos θ_i, 0) before loss/PSNR. Use when GT bakes in foreshortening (e.g. BTF) but the decoder predicts a pure BRDF.
 logger:
   # https://pytorch-lightning.readthedocs.io/en/stable/extensions/generated/pytorch_lightning.loggers.WandbLogger.html

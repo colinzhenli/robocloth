@@ -1,17 +1,15 @@
 import torch
 import torch.nn.functional as NF
 import pytorch_lightning as pl
-import pl_bolts
+from utils.lr_scheduler import LinearWarmupCosineAnnealingLR
 from renderer import ForwardRenderer
 import torchvision
-from torchviz import make_dot
 import json
-from viztracer import VizTracer
 import cv2
 import numpy as np
 from tqdm import tqdm
 import math
-from models.emitter import DynamicPointEmitter, PresetPointEmitter, RealAreaEmitter, ConstantEmitter, MultiAreaEmitter
+from models.emitter import RealAreaEmitter, ConstantEmitter, MultiAreaEmitter
 from models.brdf import GreyPatchBRDF
 import os
 from utils.pose_refiner import GlobalHandEyeRefiner
@@ -272,7 +270,7 @@ class Stage1Trainer(pl.LightningModule):
                 momentum=0.0,
                 weight_decay=wd,
             )
-            scheduler = pl_bolts.optimizers.LinearWarmupCosineAnnealingLR(
+            scheduler = LinearWarmupCosineAnnealingLR(
                 optimizer,
                 warmup_epochs=int(self.hparams.model.optimizer.warmup_steps_ratio * self.hparams.model.trainer.max_steps),
                 max_epochs=self.hparams.model.trainer.max_steps,

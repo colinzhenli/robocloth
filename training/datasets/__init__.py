@@ -1,11 +1,16 @@
-from .real import RealValDataset, RealImageDataset, RealImageDenseDataset
-from .sphere import SphereIterableDataset, SphereTestDataset, SphereValDataset, SphereImageDataset
-from .sphere import get_c2w, get_rays, get_ray_directions
-from .points import MultiMaterialPointDataset, MultiMaterialDenseDataset
-from .MERLInterface import MerlTorch
-from .real import RealNovelViewDataset
-from .merl import MERLBRDFIterableDataset, MERLBRDFIterableDataset_hd, MERLBRDFFixedDataset_hd,MERLBRDFFixedDataset
+"""Dataset loaders for the two-stage training pipeline.
+
+RoboCloth capture data:
+    MultiMaterialDenseDataset - stage 1 (dense per-point observation tensors)
+    RealImageDenseDataset     - stage 2 training views
+    RealValDataset            - stage 2 / evaluation held-out views
+Comparison datasets:
+    MERLBRDFIterableDataset / MERLBRDFFixedDataset - MERL measured BRDFs
+    BonnDataset / BonnValDataset / BonnSingleMaterial* - Bonn UBOFAB19 SVBRDFs
+    UBOBTFTrainDataset / UBOBTFValDataset - UBO2014 BTFs
+"""
+from .real import RealValDataset, RealImageDenseDataset
+from .points import MultiMaterialDenseDataset
+from .merl import MERLBRDFIterableDataset, MERLBRDFFixedDataset
 from .bonn import BonnDataset, BonnValDataset, BonnSingleMaterialDataset, BonnSingleMaterialValDataset
 from .ubo import UBOBTFTrainDataset, UBOBTFValDataset
-__all__ = [RealImageDataset, RealImageDenseDataset, RealValDataset, SphereIterableDataset, SphereTestDataset, SphereValDataset, SphereImageDataset, MultiMaterialPointDataset, MultiMaterialDenseDataset, MERLBRDFIterableDataset, MERLBRDFIterableDataset_hd, MERLBRDFFixedDataset_hd, MERLBRDFFixedDataset, MerlTorch, RealNovelViewDataset, BonnDataset, BonnValDataset, BonnSingleMaterialDataset, BonnSingleMaterialValDataset, UBOBTFTrainDataset, UBOBTFValDataset]
-

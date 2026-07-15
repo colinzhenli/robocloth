@@ -11,14 +11,18 @@ from renderer import ForwardRenderer
 from trainers import get_trainer_class
 from models.brdf import SvPBRBRDF
 from torch.utils.data import DataLoader
-from datasets import RealImageDataset, RealImageDenseDataset, RealValDataset, MultiMaterialPointDataset, MultiMaterialDenseDataset, MERLBRDFIterableDataset,MERLBRDFIterableDataset_hd,MERLBRDFFixedDataset_hd,MERLBRDFFixedDataset, RealNovelViewDataset, BonnDataset, BonnValDataset, BonnSingleMaterialDataset, BonnSingleMaterialValDataset, UBOBTFTrainDataset, UBOBTFValDataset
+from datasets import (
+    RealImageDenseDataset, RealValDataset, MultiMaterialDenseDataset,
+    MERLBRDFIterableDataset, MERLBRDFFixedDataset,
+    BonnDataset, BonnValDataset, BonnSingleMaterialDataset, BonnSingleMaterialValDataset,
+    UBOBTFTrainDataset, UBOBTFValDataset,
+)
 import hydra
 from omegaconf import DictConfig
 from pytorch_lightning.strategies import DDPStrategy
 import importlib
 import warnings
 import logging
-from viztracer import VizTracer
 import cv2
 warnings.filterwarnings("ignore")
 logging.getLogger("pytorch_lightning").setLevel(logging.ERROR)
@@ -202,24 +206,10 @@ def main(cfg):
     print("after trainer init")
     print("==> initializing data ...")
     validate_on_stage1 = getattr(cfg.model, 'validate_on_stage1', False) and (cfg.model.stage == 1) and (not cfg.model.test)
-    if cfg.data.dataset_name == "real":
-        if not cfg.model.test:
-            train_dataset = RealImageDataset(cfg, gt_folder=cfg.gt_folder, split="train")
-            val_dataset = RealValDataset(cfg, gt_folder=cfg.gt_folder)
-        else:
-            if cfg.model.test_novel_view:
-                val_dataset = RealNovelViewDataset(cfg, gt_folder=cfg.gt_folder)
-            else:
-                val_dataset = RealValDataset(cfg, gt_folder=cfg.gt_folder)
-    elif cfg.data.dataset_name == "real_dense":
+    if cfg.data.dataset_name == "stage2_dense":
         if not cfg.model.test:
             train_dataset = RealImageDenseDataset(cfg, gt_folder=cfg.gt_folder, split="train")
-            val_dataset = RealValDataset(cfg, gt_folder=cfg.gt_folder)
-        else:
-            if cfg.model.test_novel_view:
-                val_dataset = RealNovelViewDataset(cfg, gt_folder=cfg.gt_folder)
-            else:
-                val_dataset = RealValDataset(cfg, gt_folder=cfg.gt_folder)
+        val_dataset = RealValDataset(cfg, gt_folder=cfg.gt_folder)
     elif cfg.data.dataset_name == "merl":
         if cfg.model.stage == 1:
             train_dataset = MERLBRDFIterableDataset(cfg,data_folder=cfg.dataset_folder,batch_size=cfg.data.rays_num,split="train")
@@ -233,13 +223,7 @@ def main(cfg):
                 val_dataset = MERLBRDFFixedDataset(cfg,data_folder=cfg.dataset_folder,batch_size=1048576,split="val")
             else:
                 val_dataset = MERLBRDFFixedDataset(cfg,data_folder=cfg.dataset_folder,batch_size=1048576,split="val")
-    elif cfg.data.dataset_name == "points":
-        train_dataset = MultiMaterialPointDataset(cfg, root_folder=cfg.dataset_folder, split="train")
-        if cfg.data.debug & cfg.data.valid_on_train_set:
-            val_dataset = MultiMaterialPointDataset(cfg, root_folder=cfg.dataset_folder, split="train")
-        else:
-            val_dataset = MultiMaterialPointDataset(cfg, root_folder=cfg.dataset_folder, split="val")
-    elif cfg.data.dataset_name == "points_dense":
+    elif cfg.data.dataset_name == "stage1_dense":
         if validate_on_stage1:
             # Train on the held-out test materials using the iterable train
             # loader (mirrors the Bonn flow which points dataset_folder at

@@ -28,8 +28,8 @@ python train.py \
     output_folder="$OUTPUT_ROOT" \
     exp_output_root_path="$OUTPUT_ROOT/$EXP_NAME" \
     data=merl \
-    renderer=realcapture_area_emitter \
-    material=merl_brdf_model \
+    renderer=rig_merl \
+    material=merl_neural \
     experiment_name="$EXP_NAME" \
     model.optimizer.name=Adam8bit \
     model.optimizer.reset_latent_momentum_on_chunk_switch=False \

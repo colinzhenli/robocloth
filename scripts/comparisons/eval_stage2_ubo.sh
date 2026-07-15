@@ -30,11 +30,11 @@ EXP_NAME=${EXP_NAME:-Eval_UBO_${MAT}_${TAG}}
 BTF_FILE=${MAT}_W400xH400_L151xV151.btf
 
 if [ "$TAG" = "PBR" ]; then
-    MATERIAL_OVERRIDES=(material=ubo_pbr_latent
+    MATERIAL_OVERRIDES=(material=ubo_pbr
                         material.disney=True material.anisotropic=True
                         material.soft_constraint=True)
 else
-    MATERIAL_OVERRIDES=(material=ubo_latent material.latent_dim=24
+    MATERIAL_OVERRIDES=(material=ubo_neural material.latent_dim=24
                         material.different_decoder=False
                         material.decoder.use_skip_connection=True
                         material.decoder.use_film=False material.decoder.use_color_decomp=False
@@ -52,7 +52,7 @@ python train.py \
     data.btf_filename=$BTF_FILE \
     data.rays_num=500000 \
     data.valid_num=20 \
-    renderer=multiarea_emitter \
+    renderer=robocloth_rig \
     material.learnable_factor=True \
     material.predict_frame=True \
     "${MATERIAL_OVERRIDES[@]}" \
