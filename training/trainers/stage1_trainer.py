@@ -15,6 +15,15 @@ import os
 from utils.pose_refiner import GlobalHandEyeRefiner
 
 class Stage1Trainer(pl.LightningModule):
+    """Stage 1 — learn the material prior (paper Sec. 4.2).
+
+    Jointly optimizes the shared BRDF decoder (lr=decoder_lr) and the
+    per-point latent/normal/tangent bank (lr=lr, 8-bit Adam) across all
+    training materials, with the log-relative reconstruction loss and the
+    grazing-angle decay regularizer. Validation renders held-out
+    observations and logs val/psnr; checkpoints keep the full bank —
+    stage 2 later loads the decoder weights only.
+    """
     def __init__(self, cfg, material, gt_material, roughness, metallic):
         super().__init__()
         self.cfg = cfg

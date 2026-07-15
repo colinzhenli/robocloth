@@ -1,3 +1,21 @@
+"""Entry point for the two-stage training pipeline (and checkpoint evaluation).
+
+Stage 1 (model.stage=1, data=stage1_dense): jointly train the shared BRDF
+decoder and per-point latent/normal/tangent tables on the multi-material
+observation tensors (the "material prior" of the paper).
+
+Stage 2 (model.stage=2, data=stage2_dense): freeze the decoder (loaded
+decoder-only from model.ckpt_path) and fit a dense 2048^2 latent texture,
+neural-geometry UV offset and per-channel scale beta for one material.
+
+Evaluation (model.test=True): load ALL non-emitter weights from a trained
+stage-2 checkpoint and run the exact validation step over the held-out
+views — this is how the paper's PSNR tables are produced (scripts/eval_*).
+
+Trainer dispatch: get_trainer_class(stage, data.dataset_name); RoboCloth data
+uses Stage1Trainer/Stage2Trainer, the comparison datasets (bonn/merl/ubo) use
+their thin adapter subclasses. Config composition is Hydra (configs/).
+"""
 import torch
 import torch.nn as nn
 import torchvision

@@ -24,3 +24,8 @@ openexr_numpy
 setuptools<81
 tensorboard
 pandas
+open3d
+colour-demosaicing
+# psutil + pynvml only for the optional multi-GPU scheduler
+psutil
+pynvml

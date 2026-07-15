@@ -48,6 +48,17 @@ except ImportError:
 
 
 class Stage2Trainer(pl.LightningModule):
+    """Stage 2 — dense single-material reconstruction (paper Sec. 4.3).
+
+    Freezes the stage-1 decoder and optimizes the dense latent texture T_z,
+    the parallax-aware query Q (neural_geometry) and the per-channel scale
+    beta (learnable_factor) against captured HDR views. validation_step
+    renders every held-out view at spp.val, computes per-view PSNR
+    (peak = per-view GT max over visible pixels) and saves
+    gt_view_*/result_view_*_psnr*.png — the paper's val/psnr metric is the
+    epoch mean of these. Evaluation (model.test=True) re-runs exactly this
+    on a trained checkpoint.
+    """
     def __init__(self, cfg, material, gt_material, roughness, metallic):
         super().__init__()
         self.cfg = cfg

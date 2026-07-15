@@ -1,3 +1,13 @@
+"""Differentiable single-bounce path tracing (paper Eq. 2).
+
+The renderer evaluates L_o = f_r * L_e(y)*Lambda(theta) * V * cos(theta_i)/r^2
+over the finite LED area with S Monte-Carlo samples; only f_r is predicted by
+the network — all geometric/radiometric factors are computed analytically
+from calibrated quantities. Live entry points:
+  points_path_tracing_real_area_emitter      - stage 1 (per-point batches)
+  batched_path_tracing_tbn_real_area_emitter - stage 2 (per-pixel rays, TBN)
+  batched_path_tracing_tbn_preset_emitter    - Bonn/MERL comparison flows
+"""
 import torch
 import torch.nn.functional as NF
 
