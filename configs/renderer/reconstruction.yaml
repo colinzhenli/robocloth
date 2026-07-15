@@ -1,0 +1,26 @@
+# Config for the capture-time reconstruction pipeline (reconstruction/reconstruct.py).
+# Shares the rig calibration with training via rig_constants.yaml; keys here are
+# accessed at the top level (cfg.camera.*, cfg.mesh.*, ...) because reconstruct.py
+# uses this file as its root config.
+defaults:
+  - rig_constants
+  - _self_
+
+shape_matching:
+  folder_path: ???            # material folder (contains scan_log.json, hdr_raw/, sparse/)
+  num_workers: 8
+  z_outlier_percentile: 5.0
+
+mesh:
+  rectangle:
+    # Per-material sample footprint; falls back to width/length when the id
+    # is missing from the json (or the file is absent).
+    sample_size_json: ${dataset_root}/sample_size.json
+
+# Dataset root (the parent of the material folders) — used for sample_size.json.
+dataset_root: ???
+
+# Unused by reconstruction but required by rig_constants interpolations:
+dataset_folder: ${dataset_root}
+data:
+  training_list_path: ""

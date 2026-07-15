@@ -226,11 +226,11 @@ def load_metadata(colmap_camera, metadata_path, camera_metadata_path, gt_folder,
 
 
 class RealImageDenseDataset(IterableDataset):
-    """Dense version of RealImageDataset: preloads ALL images for the material into RAM
+    """Stage-2 training loader: preloads ALL images for the material into RAM
     once, then samples uniformly each iteration. No chunk swapping, no background thread.
 
     Per-pixel transforms (CCM clip, luminance>1e-7 mask, ray construction) are reused
-    verbatim from RealImageDataset._preload_given_metadata, so the (rays, rgbs,
+    verbatim from the legacy chunked loader's _preload_given_metadata, so the (rays, rgbs,
     camera_ids, emitter_ids) multiset is bit-identical to a single chunk that covers
     all metadata.
 
@@ -298,12 +298,12 @@ class RealImageDenseDataset(IterableDataset):
             self.img_hw[0], self.img_hw[1], self.focal, self.cx, self.cy, self.distortion
         )
 
-        # Reuse the thread-safe preloader (defined on RealImageDataset). Pass our
+        # Reuse the thread-safe preloader. Pass our
         # instance via __get__ so it can read self.gt_folder / camera_metadata / etc.
         # which we mirror above with identical semantics.
         print(f"[RealImageDenseDataset] Preloading {len(self.all_metadata)} images into RAM...")
         self.rays, self.rgbs, self.camera_ids, self.emitter_ids, self.pdf = (
-            RealImageDataset._preload_given_metadata(self, self.all_metadata, directions, downsample_scale=1)
+            self._preload_given_metadata(self.all_metadata, directions, downsample_scale=1)
         )
         gb = lambda t: t.element_size() * t.numel() / 1e9
         print(f"[RealImageDenseDataset] Loaded {self.rays.shape[0]:,} rays "
@@ -336,6 +336,118 @@ class RealImageDenseDataset(IterableDataset):
                 'pdf':         pdf_vals,
                 'gt_params':   torch.zeros(1),
             }
+
+    def _preload_given_metadata(self, metadata_list, directions, downsample_scale=1):
+        # This body mirrors your original implementation, except it uses
+        # (metadata_list, directions) passed in, so it is safe for a background thread.
+        all_rays = []
+        all_rgbs = []
+        all_emitter_ids = []
+        all_camera_ids = []
+        print(f"Loading chunk with {len(metadata_list)} images...")
+        for img_data in metadata_list:
+            # Get camera info using camera_id
+            camera_info = self.camera_metadata[str(img_data["camera_id"])]
+            camera_dict = {
+                "position": camera_info["position"],
+                "rotation_matrix": camera_info["rotation_matrix"],
+            }
+
+            # Generate rays for this camera
+            # c2w = get_c2w_from_robot_pose(camera_dict, self.R_c2g, self.t_c2g)
+            c2w = torch.from_numpy(build_4x4(camera_dict["rotation_matrix"], camera_dict["position"])).float()
+            # c2w = _cv_to_gl(c2w)[:3, :4]
+            c2w = c2w[:3, :4]
+            rays_o, rays_d, dxdu, dydv = get_rays(directions, c2w, focal=self.intrinsics['focal_length'])
+            rays = torch.cat([rays_o, rays_d, dxdu, dydv], dim=-1)
+
+            # Load original RGB image (without gamma correction)
+            file_name = img_data["filename"]
+            img_path = os.path.join(self.gt_folder, file_name)
+
+            if img_path.endswith('.png'):
+                # Load PNG image (original linear RGB)
+                img = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)
+                if img is None:
+                    print(f"Warning: Could not load image {img_path}, skipping...")
+                    continue
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                img = img @ self.ccm
+                img = img.clip(0, None)
+                img = torch.from_numpy(img).float()
+            elif img_path.endswith('.exr'):
+                # Load EXR image (already linear)
+                img = open_exr(img_path, self.img_hw)
+            else:
+                raise ValueError(f"Unsupported image format: {img_path}")
+
+            img_flat = img.reshape(-1, 3)
+            # Downsample the image if needed
+            if downsample_scale > 1:
+                # Reshape to image format for downsampling
+                img_reshaped = img_flat.reshape(self.img_hw[0], self.img_hw[1], 3)
+                # Downsample using average pooling
+                img_downsampled = torch.nn.functional.avg_pool2d(
+                    img_reshaped.permute(2, 0, 1).unsqueeze(0),  # [1, 3, H, W]
+                    kernel_size=downsample_scale,
+                    stride=downsample_scale
+                ).squeeze(0).permute(1, 2, 0)  # [H', W', 3]
+                img_flat = img_downsampled.reshape(-1, 3)
+
+            # Get emitter ID directly from metadata
+            emitter_id = img_data["emitter_id"]
+            emitter_ids = torch.full((rays.shape[0],), emitter_id, dtype=torch.long)
+            camera_ids = torch.full((rays.shape[0],), int(img_data["camera_id"]), dtype=torch.long)
+
+            # Filter out low luminance rays
+            luminance = (0.2126 * img_flat[..., 0] +
+                         0.7152 * img_flat[..., 1] +
+                         0.0722 * img_flat[..., 2])
+            luminance_threshold = 1e-7
+            valid_mask = luminance > luminance_threshold
+
+            # Apply mask to filter out low luminance rays
+            rays = rays[valid_mask]
+            img_flat = img_flat[valid_mask]
+            emitter_ids = emitter_ids[valid_mask]
+            camera_ids = camera_ids[valid_mask]
+            all_rays.append(rays)
+            all_rgbs.append(img_flat)
+            all_emitter_ids.append(emitter_ids)
+            all_camera_ids.append(camera_ids)
+        
+        print(f"Finished loading chunk: {len(all_rays)} images processed")
+
+        # Concatenate all data
+        if len(all_rays) == 0:
+            # Empty fallback
+            rays = torch.empty(0, 12)
+            rgbs = torch.empty(0, 3)
+            emitter_ids = torch.empty(0, dtype=torch.long)
+            camera_ids = torch.empty(0, dtype=torch.long)
+            pdf = torch.empty(0)
+            return (rays, rgbs, camera_ids, emitter_ids, pdf)
+
+        rays = torch.cat(all_rays)
+        rgbs = torch.cat(all_rgbs)
+        emitter_ids = torch.cat(all_emitter_ids)
+        camera_ids = torch.cat(all_camera_ids)
+
+        # Calculate luminance for importance sampling
+        luminance = (0.2126 * rgbs[..., 0] +
+                     0.7152 * rgbs[..., 1] +
+                     0.0722 * rgbs[..., 2])         # (N_tot,)
+        luminance = torch.abs(luminance)
+        pdf = luminance.detach() / (luminance.sum() + 1e-12)  # p_i  (no grad)
+
+        # Randomly permute the data
+        perm_indices = torch.randperm(rays.shape[0])
+        rays = rays[perm_indices]
+        rgbs = rgbs[perm_indices]
+        emitter_ids = emitter_ids[perm_indices]
+        camera_ids = camera_ids[perm_indices]
+        pdf = pdf[perm_indices]
+        return (rays, rgbs, camera_ids, emitter_ids, pdf)
 
 
 class RealValDataset(Dataset):
