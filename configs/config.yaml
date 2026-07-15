@@ -1,3 +1,6 @@
+# Root config for the two-stage training pipeline.
+# Every field is overridable on the command line (Hydra); the scripts under
+# scripts/ set dataset_folder / output_folder / experiment_name explicitly.
 defaults:
   - data: stage1_dense
   - renderer: robocloth_rig
@@ -5,10 +8,8 @@ defaults:
   - material: stage1_prior
 
 experiment_name: test
-# exp_folder: /media/raid/cloth/No_cable_capture_Sep22/BRDF_recon_Sep30/Controlled_light/hdr
-dataset_folder: /home/featurize/data
-output_folder: /media/raid/cloth/output/BRDF
+dataset_folder: ???                 # dataset root (stage 1) or material folder (stage 2)
+output_folder: ./outputs
 exp_output_root_path: ${output_folder}/${experiment_name}
-gt_folder: ${dataset_folder}/hdr
-test_on_train: True
+gt_folder: ${dataset_folder}/hdr    # captured HDR views (stage 2 / evaluation)
 global_train_seed: 42
