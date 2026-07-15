@@ -21,7 +21,8 @@ mkdir -p "$OUT"; printf '145\n' > "$LIST"
 
 echo "== [1/2] stage-1 training smoke =="
 DATA_ROOT=$DATA_ROOT OUTPUT_ROOT=$OUT TRAINING_LIST=$LIST EXP_NAME=smoke_stage1 \
-MAX_EPOCHS=2 CHECK_VAL_EVERY=1 bash scripts/train_stage1.sh \
+bash scripts/train_stage1.sh \
+    model.trainer.max_epochs=2 model.trainer.check_val_every_n_epoch=1 \
     model.trainer.limit_train_batches=100 \
     'model.logger._target_=pytorch_lightning.loggers.CSVLogger' '~model.logger.project'
 python - "$OUT/smoke_stage1/smoke_stage1" <<'PY'

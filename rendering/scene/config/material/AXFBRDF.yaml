@@ -1,7 +1,0 @@
-type: "AXFBRDF"
-
-# Path to Autodesk AxF material file (loaded once; CPUDecoder matches axf/eval/eval.cpp).
-axf_path: "/path/to/material.axf"
-
-# Optional material ID inside the file; leave empty or omit for default material.
-material_id: ""

@@ -1,0 +1,50 @@
+<scene version="2.1.0">
+
+<!-- Cloth draped over a metal support bar, lit by the bundled HDRI envmap.
+     Replicates the legacy procedural relight scene:
+       mesh=onBars01_st_hp.ply mesh_scale=0.3, bar=pole_spheres_v4.obj (Cr,
+       alpha 0.1), camera [0,0,-1.5] -> origin, fov 30, path max_depth 4.
+     Meshes are NOT bundled: $mesh_dir must point at the render_assets meshes
+     download.  Override the default below with the MESH_DIR env var. -->
+
+	<default name="mesh_dir" value="${MESH_DIR:-/media/raid/cloth/output/Misuba_rendering/output/render/felt01/cloth_candidates/meshes}"/>
+
+	<integrator type="path">
+		<integer name="max_depth" value="4"/>
+	</integrator>
+
+	<sensor type="perspective">
+		<float name="fov" value="30.0"/>
+		<transform name="to_world">
+			<lookat origin="0, 0, -1.5" target="0, 0, 0" up="0, 1, 0"/>
+		</transform>
+		<film type="hdrfilm">
+			<integer name="width" value="512"/>
+			<integer name="height" value="512"/>
+		</film>
+	</sensor>
+
+	<!-- Draped cloth. to_world bakes the legacy auto-fit: bbox centered at the
+	     origin, longest axis scaled to span 0.6 world units (mesh_scale 0.3). -->
+	<shape type="ply" id="cloth">
+		<string name="filename" value="$mesh_dir/onBars01_st_hp.ply"/>
+		<transform name="to_world">
+			<matrix value="0.005005909903 0 0 0.0105475494 0 0.005005909903 0 -0.3261174313 0 0 0.005005909903 0.003932646135 0 0 0 1"/>
+		</transform>
+	</shape>
+
+	<!-- Metal support bar, pre-positioned in the cloth's post-auto-fit space. -->
+	<shape type="obj" id="bar">
+		<string name="filename" value="$mesh_dir/pole_spheres_v4.obj"/>
+		<bsdf type="roughconductor">
+			<string name="material" value="Cr"/>
+			<float name="alpha" value="0.1"/>
+		</bsdf>
+	</shape>
+
+	<emitter type="envmap">
+		<string name="filename" value="../../assets/envmap.exr"/>
+		<float name="scale" value="1.0"/>
+	</emitter>
+
+</scene>

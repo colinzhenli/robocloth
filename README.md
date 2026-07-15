@@ -1,76 +1,121 @@
 # RoboCloth
 
-Code release for the RoboCloth paper: a robotic acquisition pipeline and a
-500-material cloth BRDF dataset, with a two-stage neural reconstruction
-protocol and Mitsuba 3 rendering of the learned materials.
+500 real cloth materials, captured robotically and reconstructed as neural
+BRDFs you can drop into any Mitsuba 3 scene. This README shows the main
+application — **rendering our materials on your own scene**. The other entry
+points each have their own guide:
 
-```
-calibration/     offline rig calibration (geometry + radiometric) — code, docs, constants
-reconstruction/  capture-time reconstruction: COLMAP + robot alignment -> observation tensors
-training/        two-stage neural BRDF training + checkpoint evaluation
-rendering/       Mitsuba 3 visualization (relighting + full scenes)
-configs/         Hydra configs; configs/renderer/rig_constants.yaml = rig calibration record
-scripts/         validated entry-point wrappers (training, evaluation, comparisons)
-docs/            per-pipeline documentation
-envs/            pinned python environments (training, rendering)
-```
-
-## Released assets
-
-| Asset | Where |
+| I want to... | Guide |
 |---|---|
-| RoboCloth capture data (500 materials) | https://huggingface.co/datasets/koalapenguin/cloth-brdf |
-| Pretrained checkpoints (stage 1 + stage 2), comparison datasets (MERL, UBO2014), render meshes | https://huggingface.co/datasets/koalapenguin/RoboCloth |
+| Optimize a new material from our dataset (with the pretrained decoder) | [docs/optimize_new_material.md](docs/optimize_new_material.md) |
+| Train the shared BRDF decoder from scratch | [docs/train_decoder.md](docs/train_decoder.md) |
+| Reproduce the paper's numbers and figures | [docs/reproduce_paper.md](docs/reproduce_paper.md) |
+| Understand how the dataset was captured (calibration + reconstruction) | [docs/capture_pipeline.md](docs/capture_pipeline.md) |
 
-## Quickstart (~15 min + downloads)
+Released data: capture dataset at
+[koalapenguin/cloth-brdf](https://huggingface.co/datasets/koalapenguin/cloth-brdf),
+checkpoints + render assets at
+[koalapenguin/RoboCloth](https://huggingface.co/datasets/koalapenguin/RoboCloth).
 
-Reproduce one paper number and one render from the released checkpoints:
+## Render our materials on your scene
+
+### 1. Environment
 
 ```bash
-# environment (see docs/training.md for details)
-conda create -n robocloth python=3.10 -y && conda activate robocloth
-pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cu121
-pip install -r envs/training.txt
-
-# data: material 145 + calibration globals + the stage-2 checkpoint
-huggingface-cli download koalapenguin/cloth-brdf --repo-type dataset \
-    --include "globals/*" "materials/145/*" --local-dir cloth_brdf
-mkdir -p DATA_ROOT && cp cloth_brdf/globals/* DATA_ROOT/ && mv cloth_brdf/materials/145 DATA_ROOT/145 \
-    && tar -xf DATA_ROOT/145/hdr.tar -C DATA_ROOT/145
-huggingface-cli download koalapenguin/RoboCloth --repo-type dataset \
-    --include "checkpoints/stage2/RoboCloth/145/*" --local-dir ckpts
-
-# evaluate: renders the held-out views, prints the paper's PSNR (28.44 dB)
-DATA_ROOT=$PWD/DATA_ROOT OUTPUT_ROOT=$PWD/outputs \
-    bash scripts/eval_stage2.sh 145 ckpts/checkpoints/stage2/RoboCloth/145/Ours_epoch112.ckpt
+conda create -n robocloth-render -c conda-forge python=3.11 -y && conda activate robocloth-render
+pip install torch==2.4.1 torchvision==0.19.1 --index-url https://download.pytorch.org/whl/cu121
+pip install -r envs/rendering.txt
 ```
 
-## The four pipelines
+### 2. Get checkpoints
 
-1. **Calibration** ([docs/calibration.md](calibration/README.md)) — one-time
-   rig calibration: ChArUco intrinsics, Tsai hand–eye, turntable axis,
-   ColorChecker CCM, and the grey-patch radiometric fit that yields the
-   camera scale + LED angular profile. Results live in
-   `configs/renderer/rig_constants.yaml` and the dataset `globals/`.
-2. **Reconstruction** ([docs/reconstruction.md](docs/reconstruction.md)) —
-   per capture session: COLMAP sparse SfM on LDR frames, Umeyama alignment
-   to the robot frame, Menon debayering to linear HDR, and reprojection of
-   every surface point into every view → the per-material observation
-   tensor the training consumes.
-3. **Two-stage training** ([docs/training.md](docs/training.md)) — stage 1
-   learns a shared BRDF decoder + per-point latents over ~400 materials;
-   stage 2 freezes the decoder and fits a dense 2048² latent texture per
-   material. Includes evaluation scripts reproducing the paper tables and
-   the Bonn/MERL/UBO2014 comparison experiments.
-4. **Rendering** ([docs/rendering.md](docs/rendering.md)) — the trained
-   BRDF as a Mitsuba 3 BSDF plugin: relight any mesh under an environment
-   map (`rendering/relight/`), or render full scenes with per-object neural
-   materials like the paper teaser (`rendering/scene/`).
+```bash
+hf download koalapenguin/RoboCloth --repo-type dataset \
+    --include "checkpoints/stage2/RoboCloth/*" --local-dir ./ckpts
+```
 
-## Reproducing the paper
+Any of the released stage-2 checkpoints is a complete material (a latent
+texture + decoder); checkpoints you optimize yourself
+([guide](docs/optimize_new_material.md)) work identically.
 
-Every table and qualitative figure maps to a documented command — see
-[docs/reproduce_paper.md](docs/reproduce_paper.md). All evaluation paths in
-this repository were verified against the original experiment code:
-identical PSNR to full float precision on the released checkpoints, and
-bit-identical training trajectories on smoke runs.
+### 3. Describe your scene
+
+A renderable scene is a folder:
+
+```
+my_scene/
+├── scene.xml        # ordinary Mitsuba 3 scene; shapes carry ids
+├── meshes/…         # UV-mapped geometry referenced by the XML
+└── materials.json   # which shapes get which material
+```
+
+```json
+{
+  "checkpoint_root": "./ckpts/checkpoints/stage2/RoboCloth",
+  "assignments": {
+    "sofa":    {"material": "370"},
+    "curtain": {"material": "145", "uv_tiling": 12.0}
+  }
+}
+```
+
+Shapes not listed keep their XML BSDF. Meshes must have UVs (the material is
+a latent *texture*) — if yours don't, generate them with
+`python rendering/tools/generate_uv.py your_mesh.obj` (headless-Blender
+Smart-UV; needs `pip install bpy==3.6.0` under Python 3.10), and use
+`uv_tiling` to set the weave repeat density. Full `materials.json` reference:
+[rendering/README.md](rendering/README.md).
+
+### 4. Render
+
+```bash
+cd rendering
+python render.py scene=/path/to/my_scene output_base=./out output_name=my_render
+```
+
+Quality and output settings (spp, resolution, tone mapping, path depth) live
+in [rendering/configs/render.yaml](rendering/configs/render.yaml) — edit
+there or override on the command line (`render.spp=512`).
+
+### Bundled examples
+
+Cloth draped over a bar under an environment map:
+
+```bash
+hf download koalapenguin/RoboCloth --repo-type dataset \
+    --include "render_assets/*" --local-dir ./assets
+cd rendering
+MESH_DIR=../assets/render_assets BRDF_CKPT_ROOT=../ckpts/checkpoints/stage2 \
+    python render.py scene=examples/cloth_on_bar output_base=./out output_name=cloth_on_bar
+```
+
+The paper teaser (a room where sofas, pillows, carpet and curtains are all
+our reconstructed cloths):
+
+```bash
+hf download koalapenguin/RoboCloth --repo-type dataset \
+    --include "render_assets/teaser_room/*" --local-dir ./assets
+cd rendering
+TEASER_SCENE_ROOT=../assets/render_assets/teaser_room BRDF_CKPT_ROOT=../ckpts/checkpoints/stage2 \
+    python render.py scene=examples/teaser output_base=./out output_name=teaser
+```
+
+Draft quality for both: append `render.spp=16 render.width=960 render.height=540`.
+
+## Repository map
+
+```
+rendering/        Mitsuba 3 integration (render.py, BRDF plugin, examples, UV tools)
+training/         two-stage neural BRDF training + evaluation
+scripts/          download / train / evaluate entry points
+configs/          Hydra configs; experiment/*.yaml hold all hyperparameters,
+                  renderer/rig_constants.yaml is the rig-calibration record
+calibration/      offline rig-calibration solvers (see docs/capture_pipeline.md)
+reconstruction/   capture-time reconstruction (COLMAP + robot alignment + tensors)
+docs/             the guides linked above + data_formats.md
+envs/             pinned environments (training, rendering)
+```
+
+Everything in this repository is regression-verified against the original
+experiment code — see the verification notes in
+[docs/reproduce_paper.md](docs/reproduce_paper.md).

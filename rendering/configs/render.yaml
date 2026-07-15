@@ -1,0 +1,40 @@
+defaults:
+  - _self_
+
+# Scene folder containing scene.xml + materials.json (see README.md).
+scene: ???
+
+# Path-tracer / output quality. null keeps the scene XML's own setting.
+render:
+  spp: 16
+  batch_spp: 4
+  width: null
+  height: null
+  max_depth: null
+  fov: null
+
+# Native two-sided neural BSDF: back-face hits render fabric instead of black.
+# A top-level "two_sided" key in the scene's materials.json takes precedence.
+two_sided: true
+
+# Global Reinhard tonemap on the PNG output (the EXR stays linear).
+tonemap: false
+
+# Mitsuba variant. cuda_ad_rgb runs the path tracer + drjit on GPU; fall back
+# to llvm_ad_rgb only if CUDA is unavailable.
+variant: cuda_ad_rgb
+
+# Optional fixed RNG seed for the per-batch sampler seeds.
+seed: null
+
+# Output: <output_base>/<output_name>.png (+ .exr)
+output_base: outputs
+output_name: render
+
+hydra:
+  job:
+    chdir: false
+  run:
+    dir: outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  sweep:
+    dir: outputs/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
