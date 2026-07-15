@@ -21,5 +21,6 @@ Verification status of this repository against the original experiment code:
   (e.g. material 145/Ours = 28.442256927490234; UBO felt01/Bonn = 33.60);
 * training: bit-identical loss trajectories on seeded smoke runs (stage 1)
   and matching behavior on stage 2;
-* reconstruction: full-material re-run byte-compare (final confirmation pass);
+* reconstruction: full re-run of a material byte-matches the released data
+  (observation tensor, points, debayered HDR identical; poses within 1e-13 mm);
 * rendering: pixel-level agreement within Monte-Carlo noise.
