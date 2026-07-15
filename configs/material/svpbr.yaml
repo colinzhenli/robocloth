@@ -1,0 +1,15 @@
+type: "SvPBRBRDF"
+module: "models.brdf"
+
+colorful_texture: True
+anisotropic: False
+roughness: 0.2
+metallic: 0.2
+albedo: [1.0, 1.0, 1.0]
+perlin_scale: 0.1
+perlin_randomness: 0.1
+normal_map: True # whether use normal map or sphere normals
+scale_factor: 1.0 # scale factor for pbr maps
+
+pbr_texture_path: '/media/raid/zla247/BRDF-Fipt/fabric_pattern_07_4k/textures'
+# pbr_texture_path: /mnt/data/colin/colin/BRDF-Fipt/denim_fabric_03_4k/textures

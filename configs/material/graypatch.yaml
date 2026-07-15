@@ -1,0 +1,20 @@
+type: "GreyPatchBRDF"
+module: "models.brdf"
+
+# Patch layout parameters
+center_x: 0.20
+center_y: -0.11
+lambertian_brdf: True # if True, the brdf will be 0.9/pi for all angles(white paper)
+grayscale_patch_ids: [2]
+patch_width: 0.15 # 0.03 for color checker, 0.15 for diffuse paper
+patch_distance: 0.0165
+grid_rows: 4
+grid_cols: 5
+
+prefliter: False
+# Angle threshold parameters
+inc_thresh_deg: 45.0 # incident angle > 30 degree
+view_thresh_deg: 45.0
+
+# pbr_texture_path: '/media/raid/zla247/BRDF-Fipt/fabric_pattern_07_4k/textures'
+# pbr_texture_path: /mnt/data/colin/colin/BRDF-Fipt/denim_fabric_03_4k/textures

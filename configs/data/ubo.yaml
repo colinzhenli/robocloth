@@ -1,0 +1,24 @@
+defaults:
+  - base
+
+dataset_name: "ubo"
+shape:
+  type: "flat"
+  center: [0.0, 0.0, 0.0]
+  radius: 0.2
+
+# BTF file path (set from command line or dataset_folder + btf_filename)
+btf_filename: "carpet07_W400xH400_L151xV151.btf"
+
+# Spatial resolution (400x400 for UBO2014 standard)
+# These are read from the BTF header automatically, listed here for reference
+img_height: 400
+img_width: 400
+
+# Training
+rays_num: 131072
+
+# Validation
+valid_num: 10              # number of held-out angle combos to validate on
+val_view_ratio: 0.2        # fraction of angle combos held out for validation
+val_seed: 42               # fixed seed for reproducible train/val split

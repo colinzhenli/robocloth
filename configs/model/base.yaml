@@ -1,0 +1,91 @@
+ckpt_path:
+stage: 2
+freeze_decoder: False
+continue_training: False  # If True, resume full training state (optimizer, scheduler, epoch) from ckpt_path
+validate_on_stage1: False  # If True (with stage=1, test=False): load decoder-only weights and optimise latents on the validation split to probe decoder convergence
+factor_init:               # If set (stage 2, learnable_factor=True), overrides material.factor init after decoder load
+
+test: False
+emitter_calibration: False # False
+test_novel_view: False
+apply_cosine_weight: False  # If True (Stage2Trainer_UBO only), multiply BRDF output by max(cos θ_i, 0) before loss/PSNR. Use when GT bakes in foreshortening (e.g. BTF) but the decoder predicts a pure BRDF.
+logger:
+  # https://pytorch-lightning.readthedocs.io/en/stable/extensions/generated/pytorch_lightning.loggers.WandbLogger.html
+  _target_: pytorch_lightning.loggers.WandbLogger
+  project: brdf-capture
+  name: ${experiment_name}
+
+trainer:
+  accelerator: gpu
+  devices: 1
+  num_nodes: 1
+  strategy: auto            # 'auto' for single-GPU; set to 'ddp_find_unused_parameters_true' for DDP
+  max_epochs: 1000          # ← will be respected
+  check_val_every_n_epoch: 5
+  limit_train_batches: 512 # 200 iterations per epoch
+  num_sanity_val_steps: 2    # ← number of validation batches before training starts (default is 2)
+  enable_checkpointing: True  # set to False to skip checkpoint saving
+  log_every_n_steps: 10      # how often to flush scalar logs (PL default is 50)
+
+# https://pytorch-lightning.readthedocs.io/en/stable/api/pytorch_lightning.callbacks.ModelCheckpoint.html
+checkpoint_monitor:
+  _target_: pytorch_lightning.callbacks.ModelCheckpoint
+  save_top_k: -1
+  every_n_epochs: ${model.trainer.check_val_every_n_epoch}
+  save_on_train_epoch_end: False
+  save_last: True
+  filename: "{epoch}"
+  dirpath: ${exp_output_root_path}/training
+
+
+optimizer:
+  name: Adam # SGD | Adam | SparseAdam | Adam8bit | SparseAdam8bit
+  reset_latent_momentum_on_chunk_switch: False
+  weight_decay: 0.0 # 0.001
+  # lr: 0.001 
+  lr: 1e-3 # latent embedding learning rate
+  decoder_lr: 1e-4 # decoder learning rate (lower to prevent chunk overfitting)
+  inference_lr: 0.001
+  inference_steps: 3400
+  warmup_steps_ratio: 0.5
+
+psnr:
+  global_psnr: True   # default: use fixed `peak` for PSNR (stable, comparable across batches/runs); set False for legacy per-batch rgbs_gt.max()
+  peak: 1.0           # reference peak value when global_psnr=True
+
+loss:
+  recon_loss:
+    name: l1 # l1 or l2 or logrel or normalized_l1
+    weight: 1.0
+    log_space:
+      # logrel_ref: 30000
+      logrel_ref: 15000
+      logrel_eps: 1e-3
+  reg_loss:
+    name: l2_smooth
+    weight: 0.1
+  refiner_prior_loss:
+    weight: 0.01
+  pan_weight: 0.5   # loss weight for panchromatic (grayscale) observations
+  lls_weight: 0.5   # loss weight for LLS (linear light source) observations
+  learnable_pan_weights: False  # if True, RGB->gray weights for pan/lls supervision are learnable (3D nn.Parameter)
+
+lls_spp: 16          # Monte-Carlo samples per pixel for LLS integration
+
+# Grazing-incidence auxiliary supervision:
+grazing_ratio: 0.0
+grazing_mode: zero_exact            # "zero_exact" | "near_zero_brdf" | "contribution_decay"
+grazing_cos_min: 0.005              # near_zero_brdf: lower bound of c
+grazing_cos_max: 0.03               # near_zero_brdf: upper bound of c
+grazing_decay_cos_min: 0.005        # contribution_decay: lower bound of c_high
+grazing_decay_cos_max: 0.2          # contribution_decay: upper bound of c_high
+grazing_decay_weight: 1.0           # contribution_decay: scalar weight on the hinge term
+grazing_decay_eps: null             # contribution_decay: null -> falls back to loss.recon_loss.log_space.logrel_eps, else 1e-4
+
+# Linear fitting options for radiance-camera calibration
+linear_fitting:
+  skip_ransac: false  # Set to true to skip RANSAC and use simple linear regression
+
+lr_decay: # for Adam
+  decay_start_epoch: 700
+

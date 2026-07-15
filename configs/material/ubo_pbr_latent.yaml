@@ -1,0 +1,13 @@
+type: "UBOPBRLatentBRDF"
+module: "models.neural_brdf_refactored"
+btf_path: ${dataset_folder}/${data.btf_filename}
+predict_frame: False
+learnable_factor: False
+init_std: 0.1
+
+optimizer:
+  name: ${model.optimizer.name}
+
+anisotropic: True
+disney: True
+soft_constraint: True

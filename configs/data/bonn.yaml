@@ -1,0 +1,46 @@
+defaults:
+  - base
+
+dataset_name: "bonn"
+pbr_path: 
+shape:
+  type: "real"
+  center: [0.0, 0.0, 0.0]
+  radius: 0.2
+
+pixel: True
+ray_diff: True
+custom_c2w: True
+filter_observations: False # whether to filter observations by XY region
+point_subsample_ratio: 1.0 # fraction of pixels to keep per material (1.0 = all); used by BonnDataset/BonnValDataset and mirrored into cfg.material.point_subsample_ratio
+
+metadata_path: ${dataset_folder}/scan_log.json
+# metadata_path: /media/raid/cloth/capture_data/BRDF_recon_Oct21_color_checker_5_distance_grey_center/scan_log.json
+# metadata_path: /media/raid/cloth/No_cable_capture_Sep22/BRDF_recon_Sep30/scan_log.json
+# metadata_path: /media/raid/cloth/capture_data/BRDF_recon_Oct20_white_test/scan_log.json
+camera_metadata_path: ${dataset_folder}/rotated_camera.json
+handeye_refiner: False # whether to learn the refiner
+
+use_pan: True
+use_lls: True
+num_load_workers: 4   # 0 = serial; >0 = ProcessPoolExecutor with this many workers (e.g. 16)
+debug: True
+debug_num: 1
+debug_rotate: False
+debug_swap_channels: False
+points_per_material: 2000
+random_observations: True  # True: subsample rays from K*V pool; False: subsample pixels (keep all K images)
+subsample_ratio: 0.05     # fraction of rays (random_observations=True) or pixels (False) to keep per material
+random_sample_material_number:   # if set, randomly pick this many materials per batch before sampling rays
+switch_iters: 1000 # Used to test override
+chunk_size: 20
+val_materials: 2
+val_points: 500
+
+# Stage-2 single-material overfitting
+overfit_mat_id:              # material ID to overfit (used when stage=2)
+val_view_ratio: 0.2        # fraction of images held out for validation
+val_seed: 42               # fixed seed for reproducible train/val split
+valid_num: 15              # max val images (-1 = use all from val split)
+learnable_factor: False     # per-material scalar factor (stage 2 only)
+

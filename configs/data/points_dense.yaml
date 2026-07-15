@@ -1,0 +1,29 @@
+defaults:
+  - base
+
+dataset_name: "points_dense"
+pbr_path:
+shape:
+  type: "real"
+  center: [0.0, 0.0, 0.0]
+  radius: 0.2
+
+pixel: True
+ray_diff: True
+custom_c2w: True
+filter_observations: False # whether to filter observations by XY region
+point_subsample_ratio: 1.0 # fraction of points to keep per material (1.0 = all); used by MultiMaterialDenseDataset and mirrored into cfg.material.point_subsample_ratio
+num_load_workers: 0 # 0 = serial; >0 = ProcessPoolExecutor with this many workers (e.g. 16) for parallel material loading
+
+metadata_path: ${dataset_folder}/scan_log.json
+camera_metadata_path: ${dataset_folder}/rotated_camera.json
+handeye_refiner: False # whether to learn the refiner
+
+# "Pretend the swap never happened" mode for continuing training from a pre-swap
+# checkpoint. When True, any slot whose data was moved by the bad↔backup swap
+# (recorded in replace_list_path) is read from its partner's folder — which
+# physically holds the slot's pre-swap data — keeping latent_bank shape and
+# per-material offsets identical to what the saved checkpoint expects. Leave
+# False (default) for fresh training on the actual post-swap data.
+legacy_swap_indexing: False
+replace_list_path: ${dataset_folder}/replace_list.json

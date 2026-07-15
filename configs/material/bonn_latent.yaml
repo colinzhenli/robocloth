@@ -1,0 +1,47 @@
+type: "BonnLatentBRDF"
+module: "models.neural_brdf_refactored"
+data_folder: ${dataset_folder}
+debug: ${data.debug}
+debug_num: ${data.debug_num}
+debug_rotate: ${data.debug_rotate}
+debug_swap_channels: ${data.debug_swap_channels}
+latent_dim: 16
+predict_frame: True
+init_normal_from_gt: False
+use_pos_enc: True
+different_decoder: False
+learnable_factor: False
+init_std: 0.1
+# Must match cfg.data.point_subsample_ratio — BonnDataset/BonnValDataset compact
+# point_ids to a dense 0..N_sub-1 range and the latent bank must be sized accordingly.
+point_subsample_ratio: ${data.point_subsample_ratio}
+
+single_material_id: ${data.overfit_mat_id}
+optimizer:
+  name: ${model.optimizer.name}
+
+# Decoder config (passed to BRDFDecoder)
+# decoder:
+#   hidden_layers: [128, 128, 64, 32, 16]
+#   activation: "relu"
+#   output_channels: 3
+#   degree: 3  # SH degree for positional encoding
+
+decoder:
+  use_film: False
+  use_color_decomp: False
+  color_latent_dim: 6
+  smooth_reg: False
+  smooth_reg_eps: 0.02
+  use_skip_connection: True
+  skip_layer: 2
+
+  # hidden_layers: [256, 128, 128, 64, 32]
+  # activation: "leakyrelu" # only for output layer
+  # intermediate_activation: "relu"  # hidden-layer activation; "relu" matches merl-branch pretrained weights
+
+  activation: "softplus" # only for output layer
+  hidden_layers: [256, 256, 256, 256]
+  intermediate_activation: "leakyrelu"  # hidden-layer activation; "relu" matches merl-branch pretrained weights
+  output_channels: 3
+  degree: 3  # SH degree for positional encoding

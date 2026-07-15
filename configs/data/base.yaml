@@ -1,0 +1,63 @@
+train_num: 44
+val_num: 9
+test_num: 1
+num_workers: 0
+# batch_num: 2048 #4096 # steps per epoch
+rays_num: 131072  # pixels per batch
+# rays_num: 65536 # 4 times more rays 
+
+
+# filtered_purple_ids: [0, 9, 45, 109, 189, 675, 684, 850, 1012, 1013, 1014, 1039, 1051, 1052, 1053, 1054, 1064, 1065, 1066, 1077, 1078, 1079, 1080, 1082, 1103, 1104, 1105, 1106, 1117, 1118, 1130, 1131, 1139, 1143, 1144, 1145, 1146, 1155, 1156, 1157, 1168, 1169, 1170, 1181, 1182, 1183, 1196, 1209]
+# filtered_purple_ids: [1039, 1051, 1052, 1053, 1054, 1064, 1065, 1066, 1079, 1080, 1103, 1104, 1105, 1106, 1117, 1118, 1130, 1131, 1143, 1144, 1155, 1156, 1157, 1168, 1169, 1170, 1181, 1182, 1183, 1196, 1209]
+
+# filtered_purple_ids: []
+
+# Color correction matrix (CCM) for camera calibration
+# Applied to linear RGB values: corrected_rgb = raw_rgb @ CCM
+ccm: [
+  [3.6724617, -0.94800931, 0.08428962],
+  [-0.44629176, 2.96095854, -1.17898539],
+  [-0.47909694, -0.39991418, 2.10705124]
+] # Original CCM
+# ccm: [
+#   [1.0, 0.0, 0.0],
+#   [0.0, 1.0, 0.0],
+#   [0.0, 0.0, 1.0]
+# ]
+# ccm: [
+#   [3.99072468, -0.92449413, 0.04120384],
+#   [0.15118072, 2.7562835, -0.77412727],
+#   [-0.58523552, -0.35197345, 1.21288619]
+# ] # Newer CCM under 4000K light condition
+
+#load images chunk to memory
+chunk_size: 200 # 0 means no chunking
+switch_iters: 3000 # switch chunk every 10000 steps
+random_chunks: True # whether to sample chunks randomly or sequentially with shuffling at wrap
+
+importance_sampling: False
+use_single_chunk_sampling: False
+uniform_sampling: False
+importance_sampling_num: 32768 # number of pixels to sample with importance sampling
+batch_size: 1 # equal to train_num
+
+multi_resolution: False
+downsample_iter: [-1, -1]
+
+debug: False # no random permutation when debugging
+debug_num: 1
+training_list_path: ${dataset_folder}/training_list.txt
+valid_on_train_set: False
+val_ratio: 0.01
+visualize_uv: False
+start_idx: 0
+valid_num: 20 # Actual validation number during training
+use_fixed_val: False
+hold_out_val_num: 240 # The first hold_out_val_num images are used for validation
+legacy_swap_indexing: False # whether to swap the indexing of the first two dimensions of the data (for compatibility with older datasets)
+# Path to replace_list.json (used only when legacy_swap_indexing=True). Stored
+# here so renderer/emitter and material configs can interpolate it without
+# crashing; the file itself only needs to exist for Dataset_Nov11 continue-
+# training runs (other datasets ignore it).
+replace_list_path: ${dataset_folder}/replace_list.json
+
