@@ -60,9 +60,9 @@ class Config:
     MIN_FREE_DISK_GB = 20.0
 
     # Paths
-    COLMAP_SCRIPT = "recon/colmap/colmap.sh"
-    COLMAP_EXHAUSTIVE_SCRIPT = "recon/colmap/colmap_exhaustive.sh"
-    SHAPE_MATCHING_SCRIPT = "recon/calibration/shape_matching.py"
+    COLMAP_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "colmap.sh")
+    COLMAP_EXHAUSTIVE_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "colmap_exhaustive.sh")
+    SHAPE_MATCHING_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reconstruct.py")
     
     def __init__(self, dataset_root: Optional[str] = None):
         """Initialize config with dataset-specific paths."""
@@ -996,11 +996,13 @@ def launch_shape_matching(material: str, folder_path: str, num_workers: int, sta
     """
     try:
         # Build command with Hydra overrides
+        dataset_root = os.path.dirname(os.path.normpath(folder_path))
         cmd = [
             "python", config.SHAPE_MATCHING_SCRIPT,
             f"shape_matching.folder_path={folder_path}",
             f"shape_matching.num_workers={num_workers}",
-            "shape_matching.z_outlier_percentile=5.0"
+            "shape_matching.z_outlier_percentile=5.0",
+            f"dataset_root={dataset_root}",
         ]
         
         # Redirect output to log file
@@ -1713,7 +1715,7 @@ Examples:
     parser.add_argument("--force_redo_file", type=str, default=None,
                        help="Path to JSON file with materials to force-redo. Accepts either "
                             "a flat list [1,2,3] or an object with a 'materials' key "
-                            "(e.g. recon/scheduler/redo_list.json). Merged with --force_redo.")
+                            "(e.g. redo_list.json). Merged with --force_redo.")
     parser.add_argument("--only", type=str, nargs="+", default=None,
                        help="Restrict scheduler to ONLY these material IDs. All other materials "
                             "are left completely untouched (no verify, no failed-retry, no launch). "
