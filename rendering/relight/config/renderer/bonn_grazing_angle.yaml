@@ -1,0 +1,9 @@
+# @package _global_
+# UBOLatentBRDF trained from a Bonn-pretrain checkpoint with Grazing-angle loss
+# (apply_cosine_weight=True).
+renderer_name: bonn_grazing_angle
+material_type: UBOLatentBRDF
+use_btf: false
+btf_path: /media/raid/cloth/BTF/${material_id}_W400xH400_L151xV151.btf
+ckpt_path: /media/raid/cloth/output/BRDF/BTF_final/Bonn-Theia2/Stage-2_UBO_${material_id}_from_Bonn_Grazing-angle_run_1/training/model_0.20_0.20/last.ckpt
+apply_cosine_at_eval: true

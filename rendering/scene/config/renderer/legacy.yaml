@@ -1,0 +1,4 @@
+# Legacy AnisotropicLatentTexturedModel checkpoint from the original room.xml.
+# Kept so the previous teaser look can still be reproduced.
+material_type: AnisotropicLatentTexturedModel
+ckpt_path: /home/share/public_nas/haoran/material/output/Bonn-Theia2/Theia-1_Stage-2_Train-on-all-data_Correct-4000K-light_Optimize-different-decoder_From-Real_Latent-dim-16_Degree-5_Fixed-Val-227_run_1/training/model_0.20_0.20/last.ckpt

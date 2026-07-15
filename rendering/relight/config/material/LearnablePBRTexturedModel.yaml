@@ -1,0 +1,46 @@
+type: "LearnablePBRTexturedModel"
+module: "model.neural_brdf_refactored"
+# Disney PBR material for the "Ours dataset" (BRDF-Fipt learnable_pbr_texture_model,
+# disney=True). Fields mirror the ckpt's hyper_parameters.material exactly; the
+# analytic PBRDecoder ignores the `decoder` block (kept for parity / clean load).
+latent_dim: 24
+predict_frame: True
+# Inference-only toggle: when False, eval_brdf uses Mitsuba's geometric frame
+# instead of the trained predicted frame (latent layout unchanged, ckpt still loads).
+use_predicted_frame_at_eval: True
+use_nerfstudio_sh: False
+learnable_factor: True
+use_latent_bank: False
+initialize_from_std: True
+observations_folder: ${dataset_folder}/observations
+training_list_path: ${dataset_folder}/training_list.txt
+gt_frame: False
+colorful_texture: True
+leaky_relu: True
+texture_resolution: 2048
+Gaussian_blur: True
+decoder:
+  use_skip_connection: True
+  skip_layer: 2
+  hidden_layers: [256, 128, 128, 64, 32]
+  activation: leakyrelu
+  output_channels: 3
+  degree: 3
+neural_geometry:
+  enable: True
+  activation: relu
+  latent_dim: 16
+  hidden_layers: [16, 16, 8]
+  output_channels: 2
+  local_wi_wo: False
+  positional_encoding: False
+  recompute_frame: False
+  factor: 0.08
+  use_at_eval: True
+mono_brdf: False
+larger_latent_dim: False
+different_decoder: False
+output_channels: 3
+anisotropic: True
+disney: True
+soft_constraint: True

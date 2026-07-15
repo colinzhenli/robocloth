@@ -1,0 +1,19 @@
+type: "BonnPBRLatentBRDF"
+module: "model.neural_brdf_refactored"
+# Bonn dataset root holding bonn_point_metadata.json (per-material H, W).
+bonn_dataset_folder: /media/raid/cloth/Bonn_val
+btf_path: ""
+predict_frame: True
+use_predicted_frame_at_eval: true
+learnable_factor: True
+init_std: 0.1
+uv_flip_v: false
+uv_interpolation: bilinear
+
+optimizer:
+  name: "Adam"
+
+# Disney PBR latent: 12 brdf params + 6 frame = 18-D bank (matches ckpt).
+anisotropic: True
+disney: True
+soft_constraint: True

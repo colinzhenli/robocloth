@@ -1,0 +1,12 @@
+# @package _global_
+# Disney PBR renderer for the "Ours dataset" (BRDF-Fipt learnable_pbr_texture_model).
+# Analytic Disney decoder over a 34-ch learnable latent texture
+# (LearnablePBRTexturedModel). ckpt_path is overridden per-material by the
+# scheduler. apply_cosine_at_eval=false because the model multiplies the
+# predicted-frame incidence cosine internally (same as ours_anisotropic.yaml).
+renderer_name: ours_pbr
+material_type: LearnablePBRTexturedModel
+use_btf: false
+btf_path: ""
+ckpt_path: /media/raid/cloth/output/BRDF/Stage-2-Finals/Ours/226/PBR_epoch100.ckpt
+apply_cosine_at_eval: false

@@ -1,0 +1,8 @@
+# @package _global_
+# Ground-truth BTF renderer (UBOBTFInterpolator, no neural decoder).
+renderer_name: gt
+material_type: UBOLatentBRDF   # placeholder; not consulted when use_btf=true
+use_btf: true
+btf_path: /media/raid/cloth/BTF/${material_id}_W400xH400_L151xV151.btf
+ckpt_path: ""
+apply_cosine_at_eval: true     # irrelevant for the BTF path; kept uniform

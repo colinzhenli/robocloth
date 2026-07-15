@@ -1,0 +1,12 @@
+# @package _global_
+# Disney-PBR Bonn-dataset renderer (BonnPBRLatentBRDF): per-texel latent bank +
+# analytic Disney PBRDecoder. Handles the PBR stage-2 checkpoint.
+# ckpt_path overridden per-material by the scheduler; per-material H,W grid
+# resolved by the loader from bonn_point_metadata.json.
+# apply_cosine_at_eval=true (stage-2 trained with apply_cosine_weight=True).
+renderer_name: bonn_pbr
+material_type: BonnPBRLatentBRDF
+use_btf: false
+btf_path: ""
+ckpt_path: /media/raid/cloth/output/BRDF/Stage-2-Finals/Bonn/32/PBR_epoch120.ckpt
+apply_cosine_at_eval: true

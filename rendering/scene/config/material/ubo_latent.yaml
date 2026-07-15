@@ -1,0 +1,35 @@
+type: "UBOLatentBRDF"
+module: "model.neural_brdf_refactored"
+btf_path: ${dataset_folder}/${data.btf_filename}
+latent_dim: 24
+predict_frame: True
+use_pos_enc: True
+different_decoder: False
+learnable_factor: False
+init_std: 0.1
+# UV → flattened H×W bank: row-major id = row * W + col
+uv_flip_v: true
+uv_interpolation: bilinear  # bilinear | nearest
+
+optimizer:
+  name: ${model.optimizer.name}
+
+decoder:
+  use_film: False
+  use_color_decomp: False
+  color_latent_dim: 6
+  smooth_reg: False
+  smooth_reg_eps: 0.02
+  use_skip_connection: True
+  skip_layer: 2
+  output_channels: 3
+  degree: 3
+  hidden_layers: [256, 256, 256, 256]
+  activation: "softplus"
+  intermediate_activation: "leakyrelu" 
+
+
+  # hidden_layers: [256, 128, 128, 64, 32]
+  # activation: "leakyrelu" # only for output layer
+  # intermediate_activation: "relu" 
+

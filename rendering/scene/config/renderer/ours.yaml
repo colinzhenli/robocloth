@@ -1,0 +1,4 @@
+# AnisotropicLatentTexturedModel - Stage2 "Ours" finetuned on Material-226.
+# Pair a renderer key (see config/config.yaml objects map) with one of these.
+material_type: AnisotropicLatentTexturedModel
+ckpt_path: ${oc.env:BRDF_CKPT_ROOT,/media/raid/cloth/output/BRDF/Stage-2-Finals}/Stage2_Ours_Material-226.ckpt

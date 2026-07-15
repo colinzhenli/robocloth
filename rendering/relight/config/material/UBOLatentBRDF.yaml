@@ -1,0 +1,41 @@
+type: "UBOLatentBRDF"
+module: "model.neural_brdf_refactored"
+btf_path: ${dataset_folder}/${data.btf_filename}
+latent_dim: 24
+predict_frame: True
+# Inference flag (default true). When false, the model still loads the trained
+# 30-D latents but skips the rotate step and uses Mitsuba's geometric +z for the
+# foreshortening cosine. Only useful for diagnostic comparisons — the neural
+# decoder relies on the predicted frame so disabling at eval is destructive.
+use_predicted_frame_at_eval: true
+use_pos_enc: True
+different_decoder: False
+learnable_factor: True 
+init_std: 0.1
+# UV → flattened H×W bank: row-major id = row * W + col
+# Set false to match elerac/btf-rendering + BTF.py (no v inversion).
+uv_flip_v: false
+uv_interpolation: bilinear  # bilinear | nearest
+
+optimizer:
+  name: ${model.optimizer.name}
+
+decoder:
+  use_film: False
+  use_color_decomp: False
+  color_latent_dim: 6
+  smooth_reg: False
+  smooth_reg_eps: 0.02
+  use_skip_connection: True
+  skip_layer: 2
+  output_channels: 3
+  degree: 3
+  hidden_layers: [256, 256, 256, 256]
+  activation: "softplus"
+  intermediate_activation: "leakyrelu" 
+
+
+  # hidden_layers: [256, 128, 128, 64, 32]
+  # activation: "leakyrelu" # only for output layer
+  # intermediate_activation: "relu" 
+

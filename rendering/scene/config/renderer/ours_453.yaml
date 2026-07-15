@@ -1,0 +1,2 @@
+material_type: AnisotropicLatentTexturedModel
+ckpt_path: ${oc.env:BRDF_CKPT_ROOT,/media/raid/cloth/output/BRDF/Stage-2-Finals}/Ours/453/Ours_epoch100.ckpt

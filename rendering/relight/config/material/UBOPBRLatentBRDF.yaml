@@ -1,0 +1,18 @@
+type: "UBOPBRLatentBRDF"
+module: "model.neural_brdf_refactored"
+btf_path: ${dataset_folder}/${data.btf_filename}
+predict_frame: True
+# See UBOLatentBRDF.yaml — false is destructive for the neural decoder, ~neutral
+# for PBR. Keep true unless running a diagnostic.
+use_predicted_frame_at_eval: true
+learnable_factor: True
+init_std: 0.1
+# Match elerac/btf-rendering + BTF.py (no v inversion).
+uv_flip_v: false
+
+optimizer:
+  name: ${model.optimizer.name}
+
+anisotropic: True
+disney: True
+soft_constraint: True

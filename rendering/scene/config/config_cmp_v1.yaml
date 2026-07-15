@@ -1,0 +1,39 @@
+defaults:
+  - _self_
+
+scene:
+  xml_path: data/room_new/room/room.xml
+
+# v1 "good" assignment (matches cloud_sofa_v1 with carpet=226)
+objects:
+  elm__52: ours_226     # left sofa
+  elm__54: ours_314     # right sofa
+  elm__43: ours_226     # carpet
+  elm__57: ours_370     # tufted cushion (SAME material+mesh as v2 -> controlled probe)
+  elm__2:  ours_190
+  elm__3:  ours_311
+  elm__5:  ours_370
+  elm__55: ours_190
+  elm__56: ours_311
+  elm__58: ours_190
+  elm__59: ours_311
+
+render:
+  spp: 32
+  batch_spp: 4
+
+variant: cuda_ad_rgb
+dump_exr: true
+
+output_base: /media/raid/cloth/output/Misuba_rendering/teaser/cmp
+output_name: real_v1_spp32
+
+sample_num: 1048576
+
+hydra:
+  job:
+    chdir: false
+  run:
+    dir: /media/raid/cloth/output/Misuba_rendering/teaser/cmp/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  sweep:
+    dir: /media/raid/cloth/output/Misuba_rendering/teaser/cmp/outputs/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}

@@ -1,0 +1,6 @@
+defaults:
+    - material: MERLBRDF
+model_c: CompressedModel
+material_path: /media/raid/cloth/output/BRDF/real/Correct-center_Correct-spp_Center_run_1/training/model_0.20_0.20/last.ckpt
+
+sample_num: 1048576

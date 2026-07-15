@@ -1,0 +1,37 @@
+type: "BonnLatentBRDF"
+module: "model.neural_brdf_refactored"
+# Bonn dataset root holding bonn_point_metadata.json (per-material H, W, num_points).
+# The loader (mlp.create_anisotropic_model) reads H,W from here to size the
+# per-material latent bank before loading the checkpoint.
+bonn_dataset_folder: /media/raid/cloth/Bonn_val
+btf_path: ""
+latent_dim: 24
+predict_frame: True
+# Inference flag (default true). False loads the trained 30-D latents but skips
+# the predicted-frame rotate step (destructive for the neural decoder).
+use_predicted_frame_at_eval: true
+use_pos_enc: True
+different_decoder: False
+learnable_factor: True
+init_std: 0.1
+# UV -> flattened H*W bank: row-major id = row * W + col. No v inversion (matches
+# the Bonn dataset's xyz_map.reshape(H*W) ordering, same convention as UBO/BTF).
+uv_flip_v: false
+uv_interpolation: bilinear  # bilinear | nearest
+
+optimizer:
+  name: "Adam"
+
+decoder:
+  use_film: False
+  use_color_decomp: False
+  color_latent_dim: 6
+  smooth_reg: False
+  smooth_reg_eps: 0.02
+  use_skip_connection: True
+  skip_layer: 2
+  output_channels: 3
+  degree: 3
+  hidden_layers: [256, 256, 256, 256]
+  activation: "softplus"
+  intermediate_activation: "leakyrelu"

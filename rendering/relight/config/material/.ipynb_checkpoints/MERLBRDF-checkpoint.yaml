@@ -1,0 +1,26 @@
+type: "MERLBRDF"
+module: "model.neural_brdf_refactored"
+data_folder: ${dataset_folder}
+num_materials: ${data.num_materials}
+start_material_id: ${data.start_material_id}
+latent_dim: 16
+predict_frame: True
+use_pos_enc: True
+different_decoder: False
+init_std: 0.1
+
+# Decoder config (passed to BRDFDecoder)
+# decoder:
+#   hidden_layers: [128, 128, 64, 32, 16]
+#   activation: "relu"
+#   output_channels: 3
+#   degree: 3  # SH degree for positional encoding
+
+decoder:
+  input_channels: 3
+  use_skip_connection: True
+  skip_layer: 2
+  hidden_layers: [256, 128, 128, 64, 32]
+  activation: "relu"
+  output_channels: 3
+  degree: 3  # SH degree for positional encoding

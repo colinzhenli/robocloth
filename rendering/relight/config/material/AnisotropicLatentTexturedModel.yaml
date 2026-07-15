@@ -1,0 +1,63 @@
+type: "AnisotropicLatentTexturedModel"
+module: "model.neural_brdf_refactored"
+latent_dim: 24
+predict_frame: True
+# Inference-only toggle. When false, eval_brdf skips the trained-frame rotation
+# and uses Mitsuba's geometric normal/TBN instead. Latent layout is unchanged,
+# so the checkpoint still loads cleanly. Useful as a diagnostic — disabling at
+# eval is destructive for image quality (the decoder relies on the trained frame).
+use_predicted_frame_at_eval: True
+
+use_nerfstudio_sh: False
+learnable_factor: True # True only learned from merl data
+use_latent_bank: False
+initialize_from_std: True
+observations_folder: ${dataset_folder}/observations
+
+training_list_path: ${dataset_folder}/training_list.txt
+gt_frame: False
+colorful_texture: True
+leaky_relu: True
+texture_resolution: 2048
+Gaussian_blur: True
+blur_sigma0: 2.0
+blur_half_life: 30000
+decoder:
+  use_skip_connection: True
+  skip_layer: 2
+  activation: "softplus" # only for output layer
+  hidden_layers: [256, 256, 256, 256]
+  intermediate_activation: "leakyrelu"  # hidden-layer activation; "relu" matches merl-branch pretrained weights
+  output_channels: 3
+  degree: 3  # SH degree for positional encoding
+
+# neural geometry
+neural_geometry:
+  enable: True
+  activation: "relu"
+
+  latent_dim: 16
+  hidden_layers: [16, 16, 8]
+  output_channels: 2 # 2D uv offset
+  local_wi_wo: False # Use local or global wi-wo
+  positional_encoding: False # Use position encoding or not
+  recompute_frame: False
+  factor: 0.08
+  # Inference-only toggle. When false, eval_brdf skips the neural-geometry
+  # UV offset + texture re-sample step. Construction & ckpt loading unaffected.
+  use_at_eval: True
+# config 1:
+# larger_latent_dim: True
+# different_decoder: True
+# output_channels: 1
+
+# # config 2:
+# larger_latent_dim: True
+# different_decoder: False
+# output_channels: 1
+
+# # config 3:
+mono_brdf: False
+larger_latent_dim: False
+different_decoder: False
+output_channels: 3
