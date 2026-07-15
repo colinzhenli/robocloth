@@ -1,0 +1,13 @@
+# @package _global_
+# Stage 2 Disney-PBR baseline on a Bonn material (trains from scratch).
+defaults:
+  - stage2_bonn
+  - override /material: bonn_pbr
+
+material:
+  predict_frame: true
+  disney: true
+  anisotropic: true
+  soft_constraint: true
+model:
+  freeze_decoder: false

@@ -1,0 +1,8 @@
+# @package _global_
+# Stage 2, Disney-PBR baseline on RoboCloth (trains from scratch).
+defaults:
+  - stage2
+  - override /material: stage2_pbr
+
+material:
+  disney: true

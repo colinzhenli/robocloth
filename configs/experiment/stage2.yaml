@@ -1,0 +1,44 @@
+# @package _global_
+# Stage 2 — dense per-material fit with a frozen stage-1 decoder (paper
+# configuration). scripts/train_stage2.sh supplies paths + the decoder ckpt.
+defaults:
+  - override /data: stage2_dense
+  - override /renderer: robocloth_rig
+  - override /material: stage2_latent_texture
+
+data:
+  rays_num: 400000
+  use_fixed_val: false
+  debug: false
+renderer:
+  spp:
+    train: 4
+material:
+  texture_resolution: 2048
+  learnable_factor: true      # per-channel scale beta
+  mono_brdf: false
+  different_decoder: false
+  use_latent_bank: false
+  latent_dim: 24
+  neural_geometry:
+    factor: 0.08              # parallax-query scale
+  decoder:
+    use_skip_connection: true
+    degree: 3
+model:
+  stage: 2
+  test: false
+  continue_training: false
+  freeze_decoder: true
+  optimizer:
+    name: Adam8bit
+    lr: 0.002
+  loss:
+    recon_loss:
+      name: logrel
+    reg_loss:
+      weight: 0.0
+  trainer:
+    max_epochs: 100           # paper: 145->120, 226->100, 314/370/452->80
+    check_val_every_n_epoch: 2
+    limit_train_batches: 8000

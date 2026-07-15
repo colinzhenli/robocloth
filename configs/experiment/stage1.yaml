@@ -1,0 +1,46 @@
+# @package _global_
+# Stage 1 — BRDF-prior training on RoboCloth (paper configuration).
+# Edit values here to change training behavior; scripts/train_stage1.sh only
+# supplies paths.
+defaults:
+  - override /data: stage1_dense
+  - override /renderer: robocloth_rig
+  - override /material: stage1_prior
+
+data:
+  legacy_swap_indexing: false
+  rays_num: 500000            # rays per batch (reduce on GPU OOM)
+  point_subsample_ratio: 0.1  # fixed random subset of surface points per material
+  filter_observations: false
+  switch_iters: 100
+  chunk_size: 2
+renderer:
+  spp:
+    train: 4
+material:
+  latent_dim: 24
+  different_decoder: false
+  decoder:
+    use_skip_connection: true
+    degree: 3
+    smooth_reg: false
+model:
+  stage: 1
+  test: false
+  continue_training: false
+  optimizer:
+    name: Adam8bit
+    lr: 2e-3                  # latent bank
+    decoder_lr: 2e-4          # shared decoder
+    reset_latent_momentum_on_chunk_switch: false
+  loss:
+    recon_loss:
+      name: logrel
+    reg_loss:
+      weight: 0.0
+  grazing_ratio: 0.05
+  grazing_mode: near_zero_brdf
+  trainer:
+    max_epochs: 100           # released checkpoint: epoch 60
+    check_val_every_n_epoch: 5
+    limit_train_batches: 8000

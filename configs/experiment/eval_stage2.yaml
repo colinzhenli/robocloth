@@ -1,0 +1,12 @@
+# @package _global_
+# Evaluate a trained RoboCloth stage-2 checkpoint: loads all non-emitter
+# weights and runs the exact training-time validation over the held-out views.
+defaults:
+  - stage2
+
+data:
+  valid_num: 20               # save images for the first N val views (-1 = all)
+model:
+  test: true
+  trainer:
+    enable_checkpointing: false

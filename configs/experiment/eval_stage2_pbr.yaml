@@ -1,0 +1,11 @@
+# @package _global_
+# Evaluate a trained RoboCloth Disney-PBR stage-2 checkpoint.
+defaults:
+  - stage2_pbr
+
+data:
+  valid_num: 20
+model:
+  test: true
+  trainer:
+    enable_checkpointing: false

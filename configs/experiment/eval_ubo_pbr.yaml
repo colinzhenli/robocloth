@@ -1,0 +1,8 @@
+# @package _global_
+defaults:
+  - stage2_ubo_pbr
+
+model:
+  test: true
+  trainer:
+    enable_checkpointing: false

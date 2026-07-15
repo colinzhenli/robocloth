@@ -1,0 +1,42 @@
+# @package _global_
+# Stage 2 on a held-out UBO2014 BTF material (cross-dataset transfer table).
+defaults:
+  - override /data: ubo
+  - override /renderer: robocloth_rig
+  - override /material: ubo_neural
+
+data:
+  rays_num: 500000
+  valid_num: 20
+material:
+  learnable_factor: true
+  predict_frame: true
+  latent_dim: 24
+  different_decoder: false
+  decoder:
+    use_skip_connection: true
+    use_film: false
+    use_color_decomp: false
+    degree: 3
+    smooth_reg: false
+model:
+  stage: 2
+  test: false
+  continue_training: false
+  freeze_decoder: true
+  apply_cosine_weight: true
+  optimizer:
+    name: Adam
+    lr: 0.002
+    decoder_lr: 2e-4
+  loss:
+    recon_loss:
+      name: logrel
+      log_space:
+        logrel_ref: 0.05
+    reg_loss:
+      weight: 0.0
+  trainer:
+    max_epochs: 60
+    check_val_every_n_epoch: 2
+    limit_train_batches: 5838

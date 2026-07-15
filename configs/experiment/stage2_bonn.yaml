@@ -1,0 +1,41 @@
+# @package _global_
+# Stage 2 on a held-out Bonn (UBOFAB19) material.
+defaults:
+  - override /data: bonn
+  - override /renderer: robocloth_rig
+  - override /material: bonn_neural
+
+data:
+  rays_num: 500000
+  valid_num: 20
+material:
+  learnable_factor: true
+  different_decoder: false
+  latent_dim: 24
+  decoder:
+    use_skip_connection: true
+    use_film: false
+    use_color_decomp: false
+    degree: 3
+    smooth_reg: false
+model:
+  stage: 2
+  test: false
+  apply_cosine_weight: true
+  continue_training: false
+  freeze_decoder: true
+  optimizer:
+    name: Adam8bit
+    lr: 0.002
+    reset_latent_momentum_on_chunk_switch: false
+  loss:
+    recon_loss:
+      name: logrel
+      log_space:
+        logrel_ref: 0.02
+    reg_loss:
+      weight: 0.0
+  trainer:
+    max_epochs: 120
+    check_val_every_n_epoch: 4
+    limit_train_batches: 743

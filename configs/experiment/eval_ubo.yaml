@@ -1,0 +1,9 @@
+# @package _global_
+# Evaluate a trained UBO2014 stage-2 checkpoint on the held-out BTF angles.
+defaults:
+  - stage2_ubo
+
+model:
+  test: true
+  trainer:
+    enable_checkpointing: false

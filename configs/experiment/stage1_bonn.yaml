@@ -1,0 +1,53 @@
+# @package _global_
+# Stage 1 on the Bonn (UBOFAB19) SVBRDF corpus — the "Bonn" decoder column.
+defaults:
+  - override /data: bonn
+  - override /renderer: robocloth_rig
+  - override /material: bonn_neural
+
+data:
+  num_load_workers: 2
+  use_pan: true
+  use_lls: true
+  debug: false
+  debug_num: 200
+  rays_num: 500000
+  point_subsample_ratio: 0.1
+  filter_observations: false
+material:
+  latent_dim: 24
+  different_decoder: false
+  decoder:
+    use_skip_connection: true
+    use_film: false
+    use_color_decomp: false
+    degree: 3
+    smooth_reg: false
+model:
+  stage: 1
+  test: false
+  continue_training: false
+  apply_cosine_weight: true
+  lls_spp: 4
+  psnr:
+    global_psnr: false
+  optimizer:
+    name: Adam8bit
+    lr: 2e-3
+    decoder_lr: 2e-4
+    reset_latent_momentum_on_chunk_switch: false
+  loss:
+    recon_loss:
+      name: logrel
+      log_space:
+        logrel_ref: 0.02
+    reg_loss:
+      weight: 0.0
+    pan_weight: 1.0
+    lls_weight: 1.0
+  grazing_ratio: 0.05
+  grazing_mode: contribution_decay
+  trainer:
+    max_epochs: 100
+    check_val_every_n_epoch: 5
+    limit_train_batches: 8000

@@ -1,0 +1,12 @@
+# @package _global_
+# Stage 2 Disney-PBR baseline on UBO2014 (trains from scratch).
+defaults:
+  - stage2_ubo
+  - override /material: ubo_pbr
+
+material:
+  disney: true
+  anisotropic: true
+  soft_constraint: true
+model:
+  freeze_decoder: false

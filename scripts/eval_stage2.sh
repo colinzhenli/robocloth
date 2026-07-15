@@ -44,43 +44,17 @@ DATASET_FOLDER=$DATA_ROOT/$MAT_ID
 EMITTER_CALIB=${EMITTER_CALIB:-$DATASET_FOLDER/emitter_calibration.json}
 [ -f "$EMITTER_CALIB" ] || EMITTER_CALIB=$DATA_ROOT/emitter_calibration.json
 
-if [ "$TAG" = "PBR" ]; then
-    MATERIAL_OVERRIDES=(material=stage2_pbr material.disney=True)
-else
-    MATERIAL_OVERRIDES=(material=stage2_latent_texture)
-fi
-
 EXP_DIR=$OUTPUT_ROOT/$EXP_NAME
 mkdir -p "$EXP_DIR"
 
-python train.py \
+python train.py +experiment=$([ "$TAG" = "PBR" ] && echo eval_stage2_pbr || echo eval_stage2) \
+    dataset_folder="$DATASET_FOLDER" \
+    renderer.emitter.direction_json="$EMITTER_CALIB" \
     output_folder="$OUTPUT_ROOT" \
     exp_output_root_path="$EXP_DIR" \
-    dataset_folder="$DATASET_FOLDER" \
-    data=stage2_dense \
-    data.rays_num=400000 \
-    data.use_fixed_val=False \
-    data.debug=False \
-    data.valid_num=$VALID_NUM \
-    renderer=robocloth_rig \
-    renderer.emitter.direction_json="$EMITTER_CALIB" \
-    "${MATERIAL_OVERRIDES[@]}" \
-    material.texture_resolution=2048 \
-    material.learnable_factor=True \
-    material.mono_brdf=False \
-    material.different_decoder=False \
-    material.use_latent_bank=False \
-    material.latent_dim=24 \
-    material.neural_geometry.factor=0.08 \
-    material.decoder.use_skip_connection=True \
-    material.decoder.degree=3 \
     experiment_name="$EXP_NAME" \
-    model.stage=2 \
-    model.test=True \
-    model.continue_training=False \
-    model.freeze_decoder=True \
+    data.valid_num=$VALID_NUM \
     model.ckpt_path="$CKPT" \
-    model.trainer.enable_checkpointing=False \
     'model.logger._target_=pytorch_lightning.loggers.CSVLogger' \
     '~model.logger.project' \
     "${@:4}"

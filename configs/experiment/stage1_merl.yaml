@@ -1,0 +1,43 @@
+# @package _global_
+# Stage 1 on the MERL measured-BRDF database — the "MERL" decoder column.
+defaults:
+  - override /data: merl
+  - override /renderer: rig_merl
+  - override /material: merl_neural
+
+data:
+  switch_iters: 2000
+  chunk_size: 20
+  filter_observations: false
+  rays_num: 500000
+material:
+  latent_dim: 24
+  different_decoder: false
+  decoder:
+    use_skip_connection: true
+    use_film: false
+    use_color_decomp: false
+    degree: 3
+    smooth_reg: false
+model:
+  stage: 1
+  test: false
+  optimizer:
+    name: Adam8bit
+    lr: 2e-3
+    decoder_lr: 2e-4
+    reset_latent_momentum_on_chunk_switch: false
+  loss:
+    recon_loss:
+      name: logrel
+      log_space:
+        logrel_ref: 0.057
+    reg_loss:
+      weight: 0.0
+  grazing_ratio: 0.05
+  grazing_mode: contribution_decay
+  trainer:
+    max_epochs: 70
+    check_val_every_n_epoch: 5
+    log_every_n_steps: 5
+    limit_train_batches: 8000
